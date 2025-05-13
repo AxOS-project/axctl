@@ -1,5 +1,5 @@
 use std::process::exit;
-use clap::{Parser, Subcommand};
+use clap::{Parser};
 
 use internal::utils;
 use crate::args::Operation;
