@@ -1,10 +1,11 @@
 [package]
 name = "axctl"
 version = "0.1.0"
+description = "Command line tool for managing AxOS"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.5.38", features = ["derive"] }
+clap = { version = "4.5.38", features = ["derive", "wrap_help"] }
 libc = "0.2.172"
 
 [dependencies.tokio]
