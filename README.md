@@ -4,3 +4,12 @@
 
 > [!IMPORTANT]
 > Coming soon
+
+# TODO
+
+- [x] Add splash screen toggle
+- [x] Add grub menu toggle
+- [ ] Better args handling
+- [ ] Better help printing
+- [ ] Better error handling
+- [ ] More options
