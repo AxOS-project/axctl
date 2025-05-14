@@ -24,6 +24,9 @@ pub enum Operation {
 
     #[command(bin_name = "axctl", name = "net", aliases = ["network"], about = "Basic networking commands")]
     Network(SimpleNetworking),
+
+    #[command(bin_name = "axctl", name = "device-info", aliases = ["info"], about = "Display device information")]
+    DeviceInfo,
 }
 
 #[derive(Default, Debug, Clone, Parser)]
@@ -63,3 +66,6 @@ pub struct SimpleNetworking {
     #[command(subcommand)]
     pub action: NetworkOperation,
 }
+
+#[derive(Debug, Clone, Parser)]
+pub struct DeviceInfo;

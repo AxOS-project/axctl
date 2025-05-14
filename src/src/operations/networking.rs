@@ -1,6 +1,6 @@
 use crate::args::SimpleNetworking;
 use crate::args::NetworkOperation;
-use std::process::{Command, exit};
+use std::process::Command;
 
 pub fn networking(args: &SimpleNetworking) {
     match &args.action {

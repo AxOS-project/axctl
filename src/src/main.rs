@@ -32,6 +32,9 @@ async fn main() {
         Some(Operation::Network(args)) => {
             operations::networking(&args)
         }
+        Some(Operation::DeviceInfo) => {
+            operations::device_info()
+        }
         None => {
             println!("No subcommand provided. Use --help for more information.");
         }
