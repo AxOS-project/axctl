@@ -18,6 +18,15 @@ pub enum Operation {
 
     #[command(bin_name = "axctl", name = "toggle-boot-menu", aliases = ["boot-menu"], about = "Toggle the boot menu on or off")]
     ToggleBootMenu,
+
+    #[command(bin_name = "axctl", name = "change-hostname", aliases = ["hostname"], about = "Change the device hostname")]
+    ChangeHostName(ChangeHostName),
+
+    #[command(bin_name = "axctl", name = "net", aliases = ["network"], about = "Basic networking commands")]
+    Network(SimpleNetworking),
+
+    #[command(bin_name = "axctl", name = "device-info", aliases = ["info"], about = "Display device information")]
+    DeviceInfo,
 }
 
 #[derive(Default, Debug, Clone, Parser)]
@@ -34,3 +43,29 @@ pub struct ToggleBootMenuArgs {
     pub enable: Option<bool>,
 }
 
+#[derive(Default, Debug, Clone, Parser)]
+pub struct ChangeHostName {
+    #[arg(help = "Change the hostname")]
+    pub hostname: String,
+}
+
+#[derive(Debug, Clone, Subcommand)]
+pub enum NetworkOperation {
+    #[command(about = "Show IP and interface status")]
+    Status,
+
+    #[command(about = "Restart networking services")]
+    Restart,
+
+    #[command(about = "Run a basic network diagnostic")]
+    Test,
+}
+
+#[derive(Debug, Clone, Parser)]
+pub struct SimpleNetworking {
+    #[command(subcommand)]
+    pub action: NetworkOperation,
+}
+
+#[derive(Debug, Clone, Parser)]
+pub struct DeviceInfo;

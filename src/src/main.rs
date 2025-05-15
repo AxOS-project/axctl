@@ -25,6 +25,16 @@ async fn main() {
         Some(Operation::ToggleBootMenu) => {
             operations::grub_menu_toggle().await
         }
+        Some(Operation::ChangeHostName(args)) => {
+            // println!("{}", args.hostname); // debug
+            operations::change_hostname(&args.hostname)
+        }
+        Some(Operation::Network(args)) => {
+            operations::networking(&args)
+        }
+        Some(Operation::DeviceInfo) => {
+            operations::device_info()
+        }
         None => {
             println!("No subcommand provided. Use --help for more information.");
         }
