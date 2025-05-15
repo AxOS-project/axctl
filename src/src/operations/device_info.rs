@@ -65,23 +65,37 @@ pub fn device_info() {
         .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_string())
         .unwrap_or_else(|_| "?".into());
 
-    let pkg_mgr = Command::new("pacman").arg("-V").output()
-    .map(|out| {
-        if out.status.success() {
-            "pacman (Arch-based)"
-        } else {
-            Command::new("dpkg").arg("-l").output()
-                .map(|out| {
-                    if out.status.success() {
-                        "dpkg (Debian-based)"
-                    } else {
-                        "Unknown"
-                    }
-                })
-                .unwrap_or("Unknown")
-        }
-    })
-    .unwrap_or("Unknown");
+    let pkg_mgr = Command::new("epsi")
+        .arg("--version")
+        .output()
+        .map(|out| {
+            if out.status.success() {
+                "Epsilon (AxOS)"
+            } else {
+                Command::new("pacman")
+                    .arg("-V")
+                    .output()
+                    .map(|out| {
+                        if out.status.success() {
+                            "pacman (Arch-based)"
+                        } else {
+                            Command::new("dpkg")
+                                .arg("-l")
+                                .output()
+                                .map(|out| {
+                                    if out.status.success() {
+                                        "dpkg (Debian-based)"
+                                    } else {
+                                        "Unknown"
+                                    }
+                                })
+                                .unwrap_or("Unknown")
+                        }
+                    })
+                    .unwrap_or("Unknown")
+            }
+        })
+        .unwrap_or("Unknown");
 
 
     println!("Hostname       : {}", hostname);
