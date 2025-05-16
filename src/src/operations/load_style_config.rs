@@ -5,7 +5,7 @@ pub async fn load_style_config() {
     let current_user: &str = &env::var("SUDO_USER").unwrap_or_else(|_| "Unknown".to_string());
 
     const CONFIG_DIR: &str = "/etc/skel/.config/*";
-    const TARGET_DIR: &str = "/home/ + current_user + /.config/";
+    const TARGET_DIR: &str = &format!("/home/{}/.config/", current_user);
 
     // using rsync instead of cp because it is more efficient
     let output = std::process::Command::new("rsync")
