@@ -27,6 +27,9 @@ pub enum Operation {
 
     #[command(bin_name = "axctl", name = "device-info", aliases = ["info"], about = "Display device information")]
     DeviceInfo,
+
+    #[command(bin_name = "axctl", name = "load-style-config", aliases = ["load-style"], about = "Load the style configurations (this may overwrite existing configurations)")]
+    LoadStyleConfig,
 }
 
 #[derive(Default, Debug, Clone, Parser)]

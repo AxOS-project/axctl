@@ -35,6 +35,9 @@ async fn main() {
         Some(Operation::DeviceInfo) => {
             operations::device_info()
         }
+        Some(Operation::LoadStyleConfig) => {
+            operations::load_style_config().await
+        }
         None => {
             println!("No subcommand provided. Use --help for more information.");
         }
