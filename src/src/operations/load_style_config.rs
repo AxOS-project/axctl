@@ -1,24 +1,36 @@
-use std::env;
+use std::{fs, path::Path};
+use std::process::Command;
 
-pub async fn load_style_config() {
+pub fn load_style_config() {
+    let config_dir = "/etc/skel/.config/";
 
-    let current_user: &str = &env::var("SUDO_USER").unwrap_or_else(|_| "Unknown".to_string());
+    if let Ok(entries) = fs::read_dir("/home/") {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let target_dir = path.join(".config");
 
-    const CONFIG_DIR: &str = "/etc/skel/.config/*";
-    let target_dir: &str = &format!("/home/{}/.config/", current_user);
+            if target_dir.exists() || path.is_dir() {
+                println!("Applying config to {:?}", target_dir);
 
-    // using rsync instead of cp because it is more efficient
-    let output = std::process::Command::new("rsync")
-        .arg("-a")
-        .arg("--progress")
-        .arg(CONFIG_DIR)
-        .arg(target_dir)
-        .output()
-        .expect("Failed to copy configuration files");
+                let output = Command::new("rsync")
+                    .arg("-a")
+                    .arg("--progress")
+                    .arg("--exclude=hypr/custom/*")
+                    .arg(config_dir)
+                    .arg(target_dir.to_str().unwrap())
+                    .output()
+                    .expect("Failed to run rsync");
 
-    if !output.status.success() {
-        eprintln!("Error copying configuration files: {}", String::from_utf8_lossy(&output.stderr));
-    } else {
-        println!("Successfully copied configuration files to {}.", target_dir);
+                if !output.status.success() {
+                    eprintln!(
+                        "Error copying config to {:?}: {}",
+                        target_dir,
+                        String::from_utf8_lossy(&output.stderr)
+                    );
+                } else {
+                    println!("Config applied to {:?}", target_dir);
+                }
+            }
+        }
     }
 }
