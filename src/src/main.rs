@@ -38,6 +38,9 @@ async fn main() {
         Some(Operation::LoadStyleConfig) => {
             operations::load_style_config()
         }
+        Some(Operation::LoadSleexUserConfig) => {
+            operations::load_sleex_user_config();
+        }
         None => {
             println!("No subcommand provided. Use --help for more information.");
         }

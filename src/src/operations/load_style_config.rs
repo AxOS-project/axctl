@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::fs;
 use std::process::Command;
 
 pub fn load_style_config() {
