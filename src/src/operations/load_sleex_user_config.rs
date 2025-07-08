@@ -17,7 +17,6 @@ pub fn load_sleex_user_config() {
         })
         .unwrap_or_else(|| "us".to_string());
 
-    println!("Detected keyboard layout: {}", vc_keymap);
 
     if let Ok(entries) = fs::read_dir("/home/") {
         for entry in entries.flatten() {
@@ -36,6 +35,8 @@ pub fn load_sleex_user_config() {
                         .arg("-a")
                         .arg("--progress")
                         .arg("--exclude=hypr/custom/*")
+                        .arg("--exclude=hypr/monitors.conf")
+                        .arg("--exclude=hypr/hyprlock.conf")
                         .arg(format!("{}/", config_dir))
                         .arg(target_config.to_str().unwrap())
                         .output()
@@ -50,7 +51,24 @@ pub fn load_sleex_user_config() {
                         continue;
                     }
 
-                    println!("Config applied to {:?}", target_config);
+                    
+                    // Fix ownership: chown -R username:username ~/.config
+                    if let Some(user) = path.file_name().and_then(|n| n.to_str()) {
+                        let chown_status = Command::new("chown")
+                            .arg("-R")
+                            .arg(format!("{}:{}", user, user))
+                            .arg(target_config.to_str().unwrap())
+                            .status();
+
+                        if let Ok(status) = chown_status {
+                            if !status.success() {
+                                eprintln!("Failed to chown config for user {}", user);
+                            }
+                        } else {
+                            eprintln!("Failed to run chown for user {}", user);
+                        }
+                    }
+
                     println!("Setting keyboard layout to '{}' in {:?}", vc_keymap, hypr_custom);
 
                     // edit or add "input:kb_layout = ..."
