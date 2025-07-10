@@ -5,7 +5,7 @@ use crate::internal::utils;
 pub fn update_releases() {
 
     let lsb_release: &'static str = "/etc/lsb-release";
-    let os_release: &'static str = "/etc/lsb-release";
+    let os_release: &'static str = "/etc/os-release";
     let axos_version_path: &'static str = "/etc/axos-version";
 
     let axos_version = fs::read_to_string(axos_version_path).ok().unwrap_or_else(|| "24.08".to_string());
