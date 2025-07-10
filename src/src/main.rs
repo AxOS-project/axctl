@@ -41,6 +41,9 @@ async fn main() {
         Some(Operation::LoadSleexUserConfig) => {
             operations::load_sleex_user_config();
         }
+        Some(Operation::UpdateRelases) => {
+            operations::update_releases();
+        }
         None => {
             println!("No subcommand provided. Use --help for more information.");
         }

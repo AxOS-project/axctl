@@ -1,6 +1,6 @@
 pkgname="axctl"
-pkgver=0.3.0
-pkgrel=2
+pkgver=0.3.1
+pkgrel=1
 pkgdesc="A simple command line tool to control AxOS"
 arch=("x86_64")
 license=("GPL")
