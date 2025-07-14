@@ -37,6 +37,7 @@ pub fn load_sleex_user_config() {
                         .arg("--exclude=hypr/custom/*")
                         .arg("--exclude=hypr/monitors.conf")
                         .arg("--exclude=hypr/hyprlock.conf")
+                        .arg("--exclude=hypr/apps.conf")
                         .arg(format!("{}/", config_dir))
                         .arg(target_config.to_str().unwrap())
                         .output()
