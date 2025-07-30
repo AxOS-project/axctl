@@ -49,19 +49,20 @@ pub fn load_sleex_user_config() {
                             target_config,
                             String::from_utf8_lossy(&sync_cmd.stderr)
                         );
-                        let skel_apps_conf = format!("{}/hypr/apps.conf", config_dir);
-                        let user_apps_conf = target_config.join("hypr/apps.conf");
-                        if !user_apps_conf.exists() {
-                            if let Err(e) = fs::copy(&skel_apps_conf, &user_apps_conf) {
-                                eprintln!("Failed to copy apps.conf for user {:?}: {}", user_apps_conf, e);
-                            } else {
-                                println!("Copied apps.conf to {:?}", user_apps_conf);
-                            }
-                        }
                         continue;
                     }
 
-                    
+                    let skel_apps_conf = format!("{}/hypr/apps.conf", config_dir);
+                    let user_apps_conf = target_config.join("hypr/apps.conf");
+                    if !user_apps_conf.exists() {
+                        if let Err(e) = fs::copy(&skel_apps_conf, &user_apps_conf) {
+                            eprintln!("Failed to copy apps.conf for user {:?}: {}", user_apps_conf, e);
+                        } else {
+                            println!("Copied apps.conf to {:?}", user_apps_conf);
+                        }
+                    }
+
+
                     // Fix ownership: chown -R username:username ~/.config
                     if let Some(user) = path.file_name().and_then(|n| n.to_str()) {
                         let chown_status = Command::new("chown")
