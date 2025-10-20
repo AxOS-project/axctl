@@ -38,8 +38,8 @@ async fn main() {
         Some(Operation::LoadStyleConfig) => {
             operations::load_style_config()
         }
-        Some(Operation::LoadSleexUserConfig) => {
-            operations::load_sleex_user_config();
+        Some(Operation::ApplyDefaultSleexKeybinds) => {
+            operations::apply_default_sleex_keybinds();
         }
         Some(Operation::UpdateRelases) => {
             operations::update_releases();
