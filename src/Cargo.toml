@@ -5,9 +5,12 @@ description = "Command line tool for managing AxOS"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.5.38", features = ["derive", "wrap_help"] }
-libc = "0.2.172"
+clap = { version = "4.5.54", features = ["derive", "wrap_help"] }
+libc = "0.2.180"
+wayland-client = { version = "0.31.6", features = ["log"] }
+wayland-protocols = { version = "0.32.4", features = ["client", "staging", "unstable"] }
+wayland-protocols-wlr = { version = "0.3.4", features = ["client"] }
 
 [dependencies.tokio]
-version = "1.21.0"
+version = "1.49.0"
 features = ["process", "macros", "rt-multi-thread", "tracing"]

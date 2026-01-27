@@ -44,6 +44,9 @@ async fn main() {
         Some(Operation::UpdateRelases) => {
             operations::update_releases();
         }
+        Some(Operation::Dpms(args)) => {
+            operations::dpms_control(&args);
+        }
         None => {
             println!("No subcommand provided. Use --help for more information.");
         }
