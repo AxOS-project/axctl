@@ -1,5 +1,6 @@
 use crate::args::SimpleNetworking;
 use crate::args::NetworkOperation;
+use crate::internal::utils;
 use std::process::Command;
 
 pub fn networking(args: &SimpleNetworking) {
@@ -8,7 +9,11 @@ pub fn networking(args: &SimpleNetworking) {
             network_status();
         }
         NetworkOperation::Restart => {
-            network_restart();
+            if utils::is_run_with_root() {
+                network_restart();
+            } else {
+                eprintln!("This operation requires root privileges. Please run with sudo or as root.");
+            }
         }
         NetworkOperation::Test => {
             network_test();
@@ -91,22 +96,8 @@ fn network_status() {
     }
     println!("{}", String::from_utf8_lossy(&ping_output.stdout));
 
-    println!("\n--- Packet Statistics ---");
-    let stats_output = Command::new("netstat")
-        .arg("-i")
-        .output()
-        .expect("Failed to run 'netstat -i'");
-
-    if !stats_output.status.success() {
-        eprintln!("Error running 'netstat -i': {}", String::from_utf8_lossy(&stats_output.stderr));
-        return;
-    }
-    println!("{}", String::from_utf8_lossy(&stats_output.stdout));
-
     println!("==================== End of Network Status ====================");
 
-    // tbh idk what 60% of the stuff here means, it just outputs some random junk but i think it makes sense.
-    // ¯\_(ツ)_/¯
 }
 
 fn network_restart() {
@@ -115,7 +106,7 @@ fn network_restart() {
     let output = Command::new("sudo")
         .arg("systemctl")
         .arg("restart")
-        .arg("NetworkManager") // google said this is the one we should restart so ig it works? i didnt test it.
+        .arg("NetworkManager")
         .output();
 
     match output {
@@ -132,7 +123,6 @@ fn network_restart() {
 }
 
 fn network_test() {
-    // idk why i added this but the same info can be found in status
     println!("==================== Network Diagnostics ====================");
 
     println!("\n--- Internet Connectivity Test (ping) ---");
