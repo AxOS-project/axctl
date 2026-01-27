@@ -11,7 +11,7 @@ struct DpmsState {
     target_name: String,
     target_state: zwlr_output_power_v1::Mode,
     manager: Option<ZwlrOutputPowerManagerV1>,
-    outputs: Vec<(u32, wl_output::WlOutput)>,
+    outputs: Vec<(u32, wl_output::WlOutput, String)>,
     seat: Option<wl_seat::WlSeat>,
 }
 impl Dispatch<wl_registry::WlRegistry, ()> for DpmsState {
@@ -24,30 +24,47 @@ impl Dispatch<wl_registry::WlRegistry, ()> for DpmsState {
     qh: &QueueHandle<DpmsState>,
   ) {
     if let wl_registry::Event::Global { name, interface, .. } = event {
-      match &interface[..] {
-        "wl_output" => {
-          let output = registry.bind::<wl_output::WlOutput, _, _>(name, 2, qh, ());
-          s.outputs.push((name, output));
+        match &interface[..] {
+            "wl_output" => {
+            let output = registry.bind::<wl_output::WlOutput, _, _>(name, 4, qh, ());
+            s.outputs.push((name, output, String::new()));
+            }
+            "wl_seat" => {
+            s.seat = Some(registry.bind::<wl_seat::WlSeat, _, _>(name, 7, qh, ()));
+            }
+            "zwlr_output_power_manager_v1" => {
+            s.manager =
+                Some(registry.bind::<zwlr_output_power_manager_v1::ZwlrOutputPowerManagerV1, _, _>(name, 1, qh, ()));
+            }
+            _ => {}
         }
-        "wl_seat" => {
-          s.seat = Some(registry.bind::<wl_seat::WlSeat, _, _>(name, 7, qh, ()));
+        } else if let wl_registry::Event::GlobalRemove { name } = event {
+            if let Some(idx) = s.outputs.iter().position(|(id, _, _)| *id == name) {
+                let (_, o, _) = s.outputs.remove(idx);
+                o.release();
+            }
         }
-        "zwlr_output_power_manager_v1" => {
-          s.manager =
-            Some(registry.bind::<zwlr_output_power_manager_v1::ZwlrOutputPowerManagerV1, _, _>(name, 1, qh, ()));
-        }
-        _ => {}
-      }
-    } else if let wl_registry::Event::GlobalRemove { name } = event {
-      let (idx, (_, o)) = s.outputs.iter().enumerate().find(|&(_, (oname, _))| *oname == name).unwrap();
-      o.release();
-      s.outputs.remove(idx);
     }
-  }
+}
+
+impl Dispatch<wl_output::WlOutput, ()> for DpmsState {
+    fn event(
+        state: &mut Self,
+        proxy: &wl_output::WlOutput,
+        event: wl_output::Event,
+        _: &(),
+        _: &Connection,
+        _: &QueueHandle<DpmsState>,
+    ) {
+        if let wl_output::Event::Name { name } = event {
+            if let Some((_, _, stored_name)) = state.outputs.iter_mut().find(|(_, o, _)| o == proxy) {
+                *stored_name = name;
+            }
+        }
+    }
 }
 
 delegate_noop!(DpmsState: ignore wl_seat::WlSeat);
-delegate_noop!(DpmsState: ignore wl_output::WlOutput);
 delegate_noop!(DpmsState: zwlr_output_power_manager_v1::ZwlrOutputPowerManagerV1);
 delegate_noop!(DpmsState: ignore zwlr_output_power_v1::ZwlrOutputPowerV1);
 
@@ -74,25 +91,32 @@ pub fn dpms_control(args: &DpmsArgs) {
     };
 
     let _registry = conn.display().get_registry(&qh, ());
+    
+    // Roundtrip 1: Get globals and bind them
+    event_queue.roundtrip(&mut state).expect("Wayland communication error");
+    // Roundtrip 2: Receive the events (specifically Name) from the bound globals
     event_queue.roundtrip(&mut state).expect("Wayland communication error");
 
     if let Some(ref manager) = state.manager {
         let mut applied = false;
-        for (name, output) in &state.outputs {
-            if state.target_name == "all" || state.target_name == name.to_string() {
+        for (_, output, name) in &state.outputs {
+            // Now we match against the actual string name
+            if state.target_name == "all" || state.target_name == *name {
                 let power_ctrl = manager.get_output_power(&output, &qh, ());
                 power_ctrl.set_mode(state.target_state);
                 applied = true;
             }
         }
+
         if !applied {
             eprintln!("Error: target '{}' not found", args.target);
             eprintln!("Available outputs:");
-            for (_, output) in &state.outputs {
-                eprintln!(" - {:?}", output);
+            for (_, _, name) in &state.outputs {
+                eprintln!(" - {}", name);
             }
             std::process::exit(1);
         }
+        
         event_queue.roundtrip(&mut state).expect("Failed to sync DPMS command");
         println!("DPMS command sent for target: {}", args.target);
     } else {
