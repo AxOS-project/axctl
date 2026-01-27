@@ -1,10 +1,9 @@
 use wayland_client::{
-    protocol::{wl_output, wl_registry},
-    Connection, Dispatch, QueueHandle,
+    Connection, Dispatch, QueueHandle, delegate_noop, protocol::{wl_output, wl_registry, wl_seat}
 };
 use wayland_protocols_wlr::output_power_management::v1::client::{
-    zwlr_output_power_manager_v1::ZwlrOutputPowerManagerV1,
-    zwlr_output_power_v1::{self, ZwlrOutputPowerV1},
+    zwlr_output_power_manager_v1::{self, ZwlrOutputPowerManagerV1},
+    zwlr_output_power_v1::{self},
 };
 use crate::args::DpmsArgs;
 
@@ -12,40 +11,45 @@ struct DpmsState {
     target_name: String,
     target_state: zwlr_output_power_v1::Mode,
     manager: Option<ZwlrOutputPowerManagerV1>,
-    outputs: Vec<(wl_output::WlOutput, String)>,
+    outputs: Vec<(u32, wl_output::WlOutput)>,
+    seat: Option<wl_seat::WlSeat>,
 }
-
 impl Dispatch<wl_registry::WlRegistry, ()> for DpmsState {
-    fn event(state: &mut Self, registry: &wl_registry::WlRegistry, event: wl_registry::Event, _: &(), _: &Connection, qh: &QueueHandle<Self>) {
-        if let wl_registry::Event::Global { name, interface, .. } = event {
-            match &interface[..] {
-                "wl_output" => {
-                    registry.bind::<wl_output::WlOutput, _, _>(name, 1, qh, ());
-                }
-                "zwlr_output_power_manager_v1" => {
-                    state.manager = Some(registry.bind::<ZwlrOutputPowerManagerV1, _, _>(name, 1, qh, ()));
-                }
-                _ => {}
-            }
+    fn event(
+    s: &mut Self,
+    registry: &wl_registry::WlRegistry,
+    event: wl_registry::Event,
+    _: &(),
+    _: &Connection,
+    qh: &QueueHandle<DpmsState>,
+  ) {
+    if let wl_registry::Event::Global { name, interface, .. } = event {
+      match &interface[..] {
+        "wl_output" => {
+          let output = registry.bind::<wl_output::WlOutput, _, _>(name, 2, qh, ());
+          s.outputs.push((name, output));
         }
-    }
-}
-
-impl Dispatch<wl_output::WlOutput, ()> for DpmsState {
-    fn event(state: &mut Self, output: &wl_output::WlOutput, event: wl_output::Event, _: &(), _: &Connection, _: &QueueHandle<Self>) {
-        if let wl_output::Event::Name { name } = event {
-            state.outputs.push((output.clone(), name));
+        "wl_seat" => {
+          s.seat = Some(registry.bind::<wl_seat::WlSeat, _, _>(name, 7, qh, ()));
         }
+        "zwlr_output_power_manager_v1" => {
+          s.manager =
+            Some(registry.bind::<zwlr_output_power_manager_v1::ZwlrOutputPowerManagerV1, _, _>(name, 1, qh, ()));
+        }
+        _ => {}
+      }
+    } else if let wl_registry::Event::GlobalRemove { name } = event {
+      let (idx, (_, o)) = s.outputs.iter().enumerate().find(|&(_, (oname, _))| *oname == name).unwrap();
+      o.release();
+      s.outputs.remove(idx);
     }
+  }
 }
 
-impl Dispatch<ZwlrOutputPowerManagerV1, ()> for DpmsState {
-    fn event(_: &mut Self, _: &ZwlrOutputPowerManagerV1, _: <ZwlrOutputPowerManagerV1 as wayland_client::Proxy>::Event, _: &(), _: &Connection, _: &QueueHandle<Self>) {}
-}
-
-impl Dispatch<ZwlrOutputPowerV1, ()> for DpmsState {
-    fn event(_: &mut Self, _: &ZwlrOutputPowerV1, _: <ZwlrOutputPowerV1 as wayland_client::Proxy>::Event, _: &(), _: &Connection, _: &QueueHandle<Self>) {}
-}
+delegate_noop!(DpmsState: ignore wl_seat::WlSeat);
+delegate_noop!(DpmsState: ignore wl_output::WlOutput);
+delegate_noop!(DpmsState: zwlr_output_power_manager_v1::ZwlrOutputPowerManagerV1);
+delegate_noop!(DpmsState: ignore zwlr_output_power_v1::ZwlrOutputPowerV1);
 
 pub fn dpms_control(args: &DpmsArgs) {
     let conn = Connection::connect_to_env().expect("Failed to connect to Wayland");
@@ -66,6 +70,7 @@ pub fn dpms_control(args: &DpmsArgs) {
         target_state: mode,
         manager: None,
         outputs: Vec::new(),
+        seat: None,
     };
 
     let _registry = conn.display().get_registry(&qh, ());
@@ -73,8 +78,8 @@ pub fn dpms_control(args: &DpmsArgs) {
 
     if let Some(ref manager) = state.manager {
         let mut applied = false;
-        for (output, name) in &state.outputs {
-            if state.target_name == "all" || &state.target_name == name {
+        for (name, output) in &state.outputs {
+            if state.target_name == "all" || state.target_name == name.to_string() {
                 let power_ctrl = manager.get_output_power(&output, &qh, ());
                 power_ctrl.set_mode(state.target_state);
                 applied = true;
@@ -83,8 +88,8 @@ pub fn dpms_control(args: &DpmsArgs) {
         if !applied {
             eprintln!("Error: target '{}' not found", args.target);
             eprintln!("Available outputs:");
-            for (_, name) in &state.outputs {
-                eprintln!(" - {}", name);
+            for (_, output) in &state.outputs {
+                eprintln!(" - {:?}", output);
             }
             std::process::exit(1);
         }
