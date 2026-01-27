@@ -35,7 +35,10 @@ pub enum Operation {
     ApplyDefaultSleexKeybinds,
 
     #[command(bin_name = "axctl", name = "update-releases", about = "Updates the OS version in /etc/lsb-release and /etc/os-release")]
-    UpdateReleases
+    UpdateReleases,
+
+    #[command(name = "dpms", about = "Control DPMS (monitor power state)")]
+    Dpms(DpmsArgs),
 }
 
 #[derive(Default, Debug, Clone, Parser)]
@@ -78,3 +81,12 @@ pub struct SimpleNetworking {
 
 #[derive(Debug, Clone, Parser)]
 pub struct DeviceInfo;
+
+#[derive(Debug, Clone, Parser)]
+pub struct DpmsArgs {
+    #[arg(help = "The monitor to control (e.g., eDP-1, HDMI-1, or 'all')")]
+    pub target: String,
+
+    #[arg(help = "The state to set: 'on' or 'off'")]
+    pub state: String,
+}
