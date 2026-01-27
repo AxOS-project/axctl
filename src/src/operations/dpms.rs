@@ -72,11 +72,21 @@ pub fn dpms_control(args: &DpmsArgs) {
     event_queue.roundtrip(&mut state).expect("Wayland communication error");
 
     if let Some(ref manager) = state.manager {
+        let mut applied = false;
         for (output, name) in &state.outputs {
             if state.target_name == "all" || &state.target_name == name {
                 let power_ctrl = manager.get_output_power(&output, &qh, ());
                 power_ctrl.set_mode(state.target_state);
+                applied = true;
             }
+        }
+        if !applied {
+            eprintln!("Error: target '{}' not found", args.target);
+            eprintln!("Available outputs:");
+            for (_, name) in &state.outputs {
+                eprintln!(" - {}", name);
+            }
+            std::process::exit(1);
         }
         event_queue.roundtrip(&mut state).expect("Failed to sync DPMS command");
         println!("DPMS command sent for target: {}", args.target);
