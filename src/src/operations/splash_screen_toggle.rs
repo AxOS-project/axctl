@@ -1,6 +1,6 @@
 use crate::internal::utils;
 
-pub async fn splash_screen_toggle() {
+pub fn splash_screen_toggle() {
 
     const ACTIVE_CONFIG: &str = "/etc/plymouth/plymouthd.conf";
     

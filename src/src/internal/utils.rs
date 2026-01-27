@@ -1,7 +1,18 @@
+use std::process::exit;
+
 
 pub fn is_run_with_root() -> bool {
     let uid = unsafe { libc::geteuid() };
     uid == 0
+}
+
+pub fn run_with_root(function: impl FnOnce()) {
+    if is_run_with_root() {
+        function();
+    } else {
+        eprintln!("This operation requires root privileges. Please run with sudo or as root.");
+        exit(1);
+    }
 }
 
 pub fn sed_in_file(file_path: &str, search: &str, replace: &str) -> Result<(), Box<dyn std::error::Error>> {

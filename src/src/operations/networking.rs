@@ -1,5 +1,6 @@
 use crate::args::SimpleNetworking;
 use crate::args::NetworkOperation;
+use crate::internal::utils;
 use std::process::Command;
 
 pub fn networking(args: &SimpleNetworking) {
@@ -8,7 +9,11 @@ pub fn networking(args: &SimpleNetworking) {
             network_status();
         }
         NetworkOperation::Restart => {
-            network_restart();
+            if utils::is_run_with_root() {
+                network_restart();
+            } else {
+                eprintln!("This operation requires root privileges. Please run with sudo or as root.");
+            }
         }
         NetworkOperation::Test => {
             network_test();

@@ -1,6 +1,6 @@
 use crate::internal::utils;
 
-pub async fn grub_menu_toggle() {
+pub fn grub_menu_toggle() {
     const GRUB_CONFIG: &str = "/etc/default/grub";
     
     let file_content = std::fs::read_to_string(GRUB_CONFIG).unwrap();
