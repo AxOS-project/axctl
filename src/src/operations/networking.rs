@@ -96,18 +96,6 @@ fn network_status() {
     }
     println!("{}", String::from_utf8_lossy(&ping_output.stdout));
 
-    println!("\n--- Packet Statistics ---");
-    let stats_output = Command::new("netstat")
-        .arg("-i")
-        .output()
-        .expect("Failed to run 'netstat -i'");
-
-    if !stats_output.status.success() {
-        eprintln!("Error running 'netstat -i': {}", String::from_utf8_lossy(&stats_output.stderr));
-        return;
-    }
-    println!("{}", String::from_utf8_lossy(&stats_output.stdout));
-
     println!("==================== End of Network Status ====================");
 
     // tbh idk what 60% of the stuff here means, it just outputs some random junk but i think it makes sense.
