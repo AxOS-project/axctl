@@ -41,7 +41,7 @@ async fn main() {
         Some(Operation::ApplyDefaultSleexKeybinds) => {
             operations::apply_default_sleex_keybinds();
         }
-        Some(Operation::UpdateRelases) => {
+        Some(Operation::UpdateReleases) => {
             operations::update_releases();
         }
         None => {

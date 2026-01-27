@@ -35,7 +35,7 @@ pub enum Operation {
     ApplyDefaultSleexKeybinds,
 
     #[command(bin_name = "axctl", name = "update-releases", about = "Updates the OS version in /etc/lsb-release and /etc/os-release")]
-    UpdateRelases
+    UpdateReleases
 }
 
 #[derive(Default, Debug, Clone, Parser)]
