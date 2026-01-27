@@ -45,3 +45,10 @@ axctl device-info
 axctl load-style-config
 # Caution: this could overwrite some existing configurations
 ```
+
+```bash
+# Disable every displays (wayland only)
+axctl dpms all off
+# Enable a specific monitor (wayland only)
+axctl dpms eDP-1 on # (eDP-1 is an example)
+```
