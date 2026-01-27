@@ -98,8 +98,6 @@ fn network_status() {
 
     println!("==================== End of Network Status ====================");
 
-    // tbh idk what 60% of the stuff here means, it just outputs some random junk but i think it makes sense.
-    // ¯\_(ツ)_/¯
 }
 
 fn network_restart() {
@@ -108,7 +106,7 @@ fn network_restart() {
     let output = Command::new("sudo")
         .arg("systemctl")
         .arg("restart")
-        .arg("NetworkManager") // google said this is the one we should restart so ig it works? i didnt test it.
+        .arg("NetworkManager")
         .output();
 
     match output {
@@ -125,7 +123,6 @@ fn network_restart() {
 }
 
 fn network_test() {
-    // idk why i added this but the same info can be found in status
     println!("==================== Network Diagnostics ====================");
 
     println!("\n--- Internet Connectivity Test (ping) ---");
