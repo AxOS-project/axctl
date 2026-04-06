@@ -31,9 +31,6 @@ pub enum Operation {
     #[command(bin_name = "axctl", name = "load-style-config", aliases = ["load-style"], about = "[DEPRECATED] Load the style configurations (this may overwrite existing configurations)")]
     LoadStyleConfig,
 
-    #[command(bin_name = "axctl", name = "apply-default-sleex-keybinds", aliases = ["apply-sleex-kb"], about = "Set the default Sleex keybinds based on the system keyboard layout")]
-    ApplyDefaultSleexKeybinds,
-
     #[command(bin_name = "axctl", name = "update-releases", about = "Updates the OS version in /etc/lsb-release and /etc/os-release")]
     UpdateReleases,
 

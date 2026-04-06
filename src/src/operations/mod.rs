@@ -4,7 +4,6 @@ mod change_hostname;
 mod networking;
 mod device_info;
 mod load_style_config;
-mod apply_default_sleex_keybinds;
 mod update_releases;
 mod dpms;
 
@@ -14,6 +13,5 @@ pub use change_hostname::change_hostname;
 pub use networking::networking;
 pub use device_info::device_info;
 pub use load_style_config::load_style_config;
-pub use apply_default_sleex_keybinds::apply_default_sleex_keybinds;
 pub use update_releases::update_releases;
 pub use dpms::dpms_control;

@@ -36,11 +36,6 @@ async fn main() {
         Some(Operation::LoadStyleConfig) => {
             operations::load_style_config()
         }
-        Some(Operation::ApplyDefaultSleexKeybinds) => {
-            utils::run_with_root(|| {
-                operations::apply_default_sleex_keybinds()
-            });
-        }
         Some(Operation::UpdateReleases) => {
             utils::run_with_root(|| {
                 operations::update_releases()
